@@ -18,8 +18,6 @@ class Data(BaseModel):
 
 globalVaribles = {}
 
-
-
 # en
 # res = model.generate(
 #     input=f"H:\Downloads\\yueyu.wav",

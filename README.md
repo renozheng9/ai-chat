@@ -39,4 +39,4 @@
 * 文本对话：前端调用getReply方法，方法内请求8000端口/chat/getTextReply接口，该接口内请求8001服务/getTextReply接口获取对话结果并返回给前端。
 * 语音对话：前端调用handleBeginRecord方法开始录音，调用handleStopRecord结束录音，在结束方法中先请求8000服务/chat/getAudioTranslation接口，该接口先将用户语音存为文件，再调用8002服务/getTextByAudio接口获取翻译及语种并返回，前端拿到翻译及语种后请求8000服务/chat/getAudioReply接口，接口内首先请求8001服务/getTextReply接口获取对话回复，之后将该对话回复内容和语种作为参数请求8003服务/getAudioByText服务，该服务内进行语音合成，合成完成后返回音频文件链接，前端即可用于播放。
 
-
+注：语音合成，即8003服务的部署，需要克隆https://github.com/FunAudioLLM/CosyVoice中readme并按照readme下载并安装相关依赖，再将text2audio/text2audio.py放入克隆项目的根目录下运行

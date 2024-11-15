@@ -271,7 +271,7 @@ function Homepage() {
         if (res.data.pos + res.data.neg === 0) {
           setScore(0)
         } else {
-          setScore(Math.floor(res.data.pos / (res.data.pos + res.data.neg)))
+          setScore(Math.floor(res.data.pos * 100 / (res.data.pos + res.data.neg)))
         }
         
         setIsShowScore(true)
