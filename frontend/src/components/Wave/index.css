@@ -1,0 +1,91 @@
+@keyframes radius-animation {
+  100% {
+    height: 10px;
+    border-radius: 50%;
+    filter: contrast(2);
+  }
+}
+
+.music {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: 6px;
+}
+
+.item {
+  /* position: absolute; */
+  width: 4px;
+  border-radius: 3px;
+  background-color: #950bd3;
+}
+
+.music .one {
+  height: 6px;
+  /* transform: translateX(-60px); */
+}
+
+.music .two {
+  height: 22px;
+  /* transform: translateX(-40px); */
+}
+
+.music .three {
+  height: 19px;
+  /* transform: translateX(-20px); */
+}
+
+.music .four {
+  height: 8px;
+  /* transform: translateX(0); */
+}
+
+.music .five {
+  height: 2px;
+  /* transform: translateX(20px); */
+}
+
+.music .six {
+  height: 20px;
+  /* transform: translateX(40px); */
+}
+
+.music .seven {
+  height: 10px;
+  /* transform: translateX(60px); */
+}
+
+.play .one {
+  animation: radius-animation .3s ease;
+}
+
+.play .two {
+  animation: radius-animation .6s ease;
+}
+
+.play .three {
+  animation: radius-animation .57s ease;
+}
+
+.play .four {
+  animation: radius-animation .52s ease;
+}
+
+.play .five {
+  animation: radius-animation .4s ease;
+}
+
+.play .six {
+  animation: radius-animation .3s ease;
+}
+
+.play .seven {
+  animation: radius-animation .7s ease;
+}
+
+.play .item {
+  animation-iteration-count: infinite;
+  -webkit-animation-iteration-count: infinite;
+  animation-direction: alternate;
+  -webkit-animation-direction: alternate;
+}

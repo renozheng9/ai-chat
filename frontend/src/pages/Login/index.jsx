@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { login } from '@/api/login'
 import { setStorage, KEY_TOKEN } from "@/utils/storage";
 
-import { getReply } from "../../api/chat";
 
 function Login() {
   const [isLogin, setIsLogin] = useState(true)
@@ -34,8 +33,6 @@ function Login() {
   }
 
   function handleLogin() {
-    getReply({ text: '123' })
-    return
     login({
       username: loginUsername,
       password: loginPassword

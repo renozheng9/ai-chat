@@ -4,6 +4,7 @@ from typing import Union
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from loguru import logger
 from conf import config
 from apps.chat import chat
@@ -11,6 +12,7 @@ from apps.login import login
 
 app = FastAPI()
 
+app.mount('/static', StaticFiles(directory="static"), name="static")
 
 # app = FastAPI(current_user = Annotated[login.User, Depends(login.get_current_active_user)])
 

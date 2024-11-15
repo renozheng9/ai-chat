@@ -1,8 +1,14 @@
 import ReactMarkdown from 'react-markdown'
+import Wave from '@/components/Wave'
 import Card from './card/Card'
 
 export default function MessageBox(props) {
-  const { output } = props
+  const { data, onItemAudioClick } = props
+  const { text = '', audio = '', isPlaying = false } = data || {}
+
+  function handleItemAudioClick() {
+    onItemAudioClick(data)
+  }
 
   return (
     <Card
@@ -14,10 +20,18 @@ export default function MessageBox(props) {
       fontSize={{ base: 'sm', md: 'md' }}
       lineHeight={{ base: '24px', md: '26px' }}
       fontWeight="500"
+      style={{ width: 'auto' }}
     >
-      <ReactMarkdown className="font-medium">
-        {output ? output : ''}
-      </ReactMarkdown>
+      {
+        audio ?
+          <div onClick={handleItemAudioClick}>
+            <Wave isPlaying={isPlaying} />
+          </div>
+          :
+          <ReactMarkdown className="font-medium">
+            {text ? text : ''}
+          </ReactMarkdown>
+      }
     </Card>
   )
 }
