@@ -15,6 +15,7 @@
   - stripe
  
 * tg or whatsapp?
+  - [Connect a bot to Telegram](https://learn.microsoft.com/en-us/azure/bot-service/bot-service-channel-connect-telegram?view=azure-bot-service-4.0)
 
 #### meeting at 9:00 on 2024-11-14
 * zoom
