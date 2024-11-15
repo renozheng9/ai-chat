@@ -281,6 +281,13 @@ function Homepage() {
     })
   }, [messageList])
 
+  function handleEnd() {
+    clearTimeout(timerRef.current)
+    timerRef.current = 0
+
+    handleSentiment()
+  }
+
   useEffect(() => {
     if (!audioPlayerRef.current) {
       audioPlayerRef.current = new Audio()
@@ -323,7 +330,7 @@ function Homepage() {
   }, [messageList])
 
   return (
-    <div className="flex flex-col justify-between h-full max-w-[1280px] mx-auto my-0 py-[24px] px-[64px]">
+    <div className="flex flex-col justify-between h-full max-w-[1280px] mx-auto my-0 pt-[48px] pb-[24px] px-[64px]">
       {/* <div onClick={handleTest}>click</div> */}
       
       <div className="w-full h-[80vh] overflow-auto" ref={scrollRef}>
@@ -434,7 +441,7 @@ function Homepage() {
             _focus={{ borderColor: 'none' }}
             color="#1B254B"
             _placeholder={{ color: '#86909C' }}
-            placeholder="Type your message here..."
+            placeholder="请输入..."
             onChange={handleChange}
             value={inputText}
           />
@@ -496,6 +503,8 @@ function Homepage() {
         {/* <div onClick={handleBeginRecord}>录音</div>
         <div onClick={handleStopRecord}>停止录音</div> */}
       </div>
+
+      <div className="bg-[rgb(247,101,96)] px-[12px] py-[6px] rounded-[8px] text-white w-fit fixed left-[24px] top-[12px] cursor-pointer" onClick={handleEnd}>结束</div>
 
       {
         isShowScore ?
