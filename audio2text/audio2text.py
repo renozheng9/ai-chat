@@ -48,13 +48,15 @@ async def lifespan(app: FastAPI):
         remote_code="./model.py",    
         vad_model="fsmn-vad",
         vad_kwargs={"max_single_segment_time": 30000},
-        device="cuda:0",
+        # device="cuda:0",
+        device="cpu",
     )
 
     globalVaribles["lre_pipeline"] = pipeline(
         task='speech-language-recognition',
         model='damo/speech_campplus_five_lre_16k',
-        model_revision='v1.0.1'
+        model_revision='v1.0.1',
+        device='cpu'
     )
     yield
     torch_gc()

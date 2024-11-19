@@ -24,9 +24,13 @@ export default function MessageBox(props) {
     >
       {
         audio ?
-          <div onClick={handleItemAudioClick}>
-            <Wave isPlaying={isPlaying} />
-          </div>
+        <div>
+            <div onClick={handleItemAudioClick}>
+              <Wave isPlaying={isPlaying} />
+            </div>
+            <div>{data.text}</div>
+        </div>
+
           :
           <ReactMarkdown className="font-medium">
             {text ? text : ''}

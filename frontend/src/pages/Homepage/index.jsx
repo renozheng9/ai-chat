@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from 'axios'
+import { useNavigate } from "react-router-dom";
 import Recorder from 'recorder-core'
 import 'recorder-core/src/engine/mp3'
 import 'recorder-core/src/engine/mp3-engine'
@@ -8,15 +9,25 @@ import { MdAutoAwesome, MdBolt, MdEdit, MdPerson } from 'react-icons/md';
 import MessageBoxChat from '@/components/MessageBox';
 import Wave from '@/components/Wave'
 import ICON_RECORD from '@/assets/record.svg'
+import ICON_LIKE from '@/assets/like.svg'
 import './index.css'
 
 function Homepage() {
+  const navigate = useNavigate()
   const [count, setCount] = useState(0)
   const [loading, setLoading] = useState(false)
   const [outputCode, setOutputCode] = useState('')
   const [inputText, setInputText] = useState('')
 
-  const [messageList, setMessageList] = useState([])
+  const [messageList, setMessageList] = useState([
+    {
+      role: 'system',
+      text: '像一位非常理解和支持的認知行為治療師一樣回答，為他們的情緒提供情緒緩解和支持。在確保安全的情況下，始終盡可能提供有幫助的答案。這對他們的情緒非常重要',
+      // text: '假设你是一名心理咨询师，现在有一位病人向你咨询，这位病人刚刚失恋，很难过，请你为该病人进行心理咨询，注意回答尽量具体一些。（这一段话不需要做回复）',
+      audio: '',
+      isPlaying: false
+    }
+  ])
 
   const [canRecord, setCanRecord] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
@@ -31,29 +42,36 @@ function Homepage() {
   const nowPlayingUrlRef = useRef('')
 
   const timerRef = useRef(0)
+  const historyRef = useRef([])
+
+  const renderMessageList = useMemo(() => messageList.filter(item => ['user', 'assistant'].includes(item.role)), [messageList])
 
   function getHistory() {
-    const history = []
-    for (let i = 0; i < messageList.length; i += 2) {
-      const temp = []
-      if (messageList[i]) {
-        temp.push(messageList[i].text)
-      }
-      if (messageList[i + 1]) {
-        temp.push(messageList[i + 1].text)
-      }
-      if (temp.length > 0) {
-        history.push(temp)
-      }
-    }
-    return history
+    // const history = []
+    // for (let i = 0; i < messageList.length; i += 2) {
+    //   const temp = []
+    //   if (messageList[i]) {
+    //     temp.push(messageList[i].text)
+    //   }
+    //   if (messageList[i + 1]) {
+    //     temp.push(messageList[i + 1].text)
+    //   }
+    //   if (temp.length > 0) {
+    //     history.push(temp)
+    //   }
+    // }
+    // return history
+    return historyRef.current.map(item => ({
+      role: item.role,
+      content: item.text
+    }))
   }
 
   function getReply() {
     const text = inputText
     setInputText('')
     const temp = [...messageList]
-    setMessageList([
+    const tempAfterUser = [
       ...temp,
       {
         id: temp.length + 1,
@@ -62,8 +80,10 @@ function Homepage() {
         audio: '',
         isPlaying: false
       }
-    ])
-    const history = getHistory()
+    ]
+    setMessageList(tempAfterUser)
+    historyRef.current = tempAfterUser
+    const history = getHistory(tempAfterUser)
     axios({
       url: 'http://127.0.0.1:8000/chat/getTextReply',
       method: 'post',
@@ -77,7 +97,7 @@ function Homepage() {
     }).then(res => {
       if (res.status === 200) {
         console.log(res)
-        setMessageList([
+        const newMessageList = [
           ...temp,
           {
             id: temp.length + 1,
@@ -88,12 +108,14 @@ function Homepage() {
           },
           {
             id: temp.length + 2,
-            role: 'ai',
-            text: res.data?.text || '',
+            role: 'assistant',
+            text: res.data.text || '',
             audio: res.data?.audio || '',
             isPlaying: false
           }
-        ])
+        ]
+        setMessageList(newMessageList)
+        historyRef.current = newMessageList
       }
     }).catch(err => console.log(err))
   }
@@ -127,18 +149,8 @@ function Homepage() {
       console.log(blob)
       const tempUrl = URL.createObjectURL(blob)
       const temp = [...messageList]
-      const history = getHistory()
-      console.log([
-        ...temp,
-        {
-          id: temp.length + 1,
-          role: 'user',
-          text: '',
-          audio: tempUrl,
-          isPlaying: false
-        }
-      ])
-      setMessageList([
+
+      const newMessageList = [
         ...temp,
         {
           id: temp.length + 1,
@@ -147,7 +159,9 @@ function Homepage() {
           audio: URL.createObjectURL(blob),
           isPlaying: false
         }
-      ])
+      ]
+      setMessageList(newMessageList)
+      historyRef.current = newMessageList
 
       const file = new File([blob], 'audio.wav', { type: 'audio/wav' })
       const formData = new FormData()
@@ -156,7 +170,7 @@ function Homepage() {
       axios.post('http://127.0.0.1:8000/chat/getAudioTranslation', formData).then(translationRes => {
         console.log(translationRes)
         if (translationRes.status == 200) {
-          setMessageList([
+          const tempAfterUser = [
             ...temp,
             {
               id: temp.length + 1,
@@ -165,7 +179,11 @@ function Homepage() {
               audio: tempUrl,
               isPlaying: messageList.find(item => item.id === temp.length + 1)?.isPlaying || false
             }
-          ])
+          ]
+
+          setMessageList(tempAfterUser)
+          historyRef.current = tempAfterUser
+          const history = getHistory(tempAfterUser)
 
           axios.post('http://127.0.0.1:8000/chat/getAudioReply', {
             text: translationRes.data.text,
@@ -178,7 +196,7 @@ function Homepage() {
           }).then(audioReplyRes => {
             console.log(audioReplyRes)
             if (audioReplyRes.status === 200) {
-              setMessageList([
+              const newMessageList = [
                 ...temp,
                 {
                   id: temp.length + 1,
@@ -189,12 +207,14 @@ function Homepage() {
                 },
                 {
                   id: temp.length + 2,
-                  role: 'ai',
+                  role: 'assistant',
                   text: audioReplyRes.data.text,
                   audio: audioReplyRes.data.url,
                   isPlaying: false
                 }
-              ])
+              ]
+              setMessageList(newMessageList)
+              historyRef.current = newMessageList
             }
           }).catch(err => {
             console.log(err)
@@ -247,6 +267,7 @@ function Homepage() {
       playingItem.isPlaying = false
     }
     setMessageList(temp)
+    historyRef.current = temp
     if (playingItem || isPlaying) {
       audioPlayerRef.current.pause()
     }
@@ -259,7 +280,7 @@ function Homepage() {
   }
 
   const handleSentiment = useCallback(() => {
-    const history = getHistory()
+    const history = getHistory(messageList)
     axios.post('http://127.0.0.1:8000/chat/getSentiment', {
       history
     }, {
@@ -281,11 +302,15 @@ function Homepage() {
     })
   }, [messageList])
 
-  function handleEnd() {
+  const handleEnd = useCallback(() => {
     clearTimeout(timerRef.current)
     timerRef.current = 0
 
     handleSentiment()
+  }, [messageList])
+
+  function handleDonate() {
+    navigate("/checkout")
   }
 
   useEffect(() => {
@@ -293,9 +318,7 @@ function Homepage() {
       audioPlayerRef.current = new Audio()
     }
 
-    if (timerRef.current) {
-      clearTimeout(timerRef.current)
-    } else {
+    if (!timerRef.current) {
       timerRef.current = setTimeout(() => {
         handleSentiment()
       }, 60 * 1000)
@@ -324,16 +347,38 @@ function Homepage() {
       if (playingItem) {
         playingItem.isPlaying = false
         setMessageList(temp)
+        historyRef.current = temp
         nowPlayingUrlRef.current = ''
       }
     }
   }, [messageList])
 
   return (
-    <div className="flex flex-col justify-between h-full max-w-[1280px] mx-auto my-0 pt-[48px] pb-[24px] px-[64px]">
+    <div className="flex flex-col justify-between max-w-[1280px] mx-auto my-0 pt-[16px] pb-[24px] px-[64px]">
       {/* <div onClick={handleTest}>click</div> */}
       
-      <div className="w-full h-[80vh] overflow-auto" ref={scrollRef}>
+      <div className="w-full flex flex-row justify-between">
+        <div className="bg-[rgb(247,101,96)] h-fit px-[12px] py-[6px] rounded-[8px] text-white w-fit cursor-pointer" onClick={handleEnd}>结束</div>
+        
+        <div className="w-fit mx-auto flex flex-col items-center">
+          {
+            isShowScore ?
+              <div className="h-[64px] bg-[#950bd3] px-[18px] rounded-[10px] flex justify-center items-center text-[20px] text-[white] font-bold w-fit">{`你的開心指數：${score}%`}</div> : null
+          }
+        </div>
+        <div>
+
+          <div className="flex flex-col items-end">
+            <div className="mt-[16px] bg-[#f5bf5e] px-[12px] py-[6px] rounded-[8px] text-white w-fit cursor-pointer flex flex-row items-center gap-x-[8px]" onClick={handleDonate}>
+              <img src={ICON_LIKE} className="w-[20px]" />
+              立即捐款
+            </div>
+            <div className="mt-[6px]">所有人的精神健康都值得重视</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="w-full h-[70vh] overflow-auto" ref={scrollRef}>
         <Flex
           direction="column"
           w="100%"
@@ -343,7 +388,7 @@ function Homepage() {
           style={{ rowGap: '24px' }}
         >
           {
-            messageList.map((item, index) => (
+            renderMessageList.map((item, index) => (
               item.role === 'user' ?
                 (
                   <Flex align={'center'} mb="10px" key={index}>
@@ -379,7 +424,9 @@ function Homepage() {
                         item.audio ?
                           <div className="h-full min-h-[60px] flex flex-row items-center" onClick={() => handleItemAudioClick(item)}>
                             <Wave isPlaying={item.isPlaying} />
-                          </div> :
+
+                          </div>
+                           :
                           <Text
                             color="#1B254B"
                             fontWeight="600"
@@ -426,7 +473,7 @@ function Homepage() {
           }
         </Flex>
       </div>
-      <div className="flex flex-row justify-between gap-x-[24px]">
+      <div className="mt-[24px] flex flex-row justify-between gap-x-[24px]">
         <div className="flex-1">
           <Input
             minH="54px"
@@ -504,12 +551,31 @@ function Homepage() {
         <div onClick={handleStopRecord}>停止录音</div> */}
       </div>
 
-      <div className="bg-[rgb(247,101,96)] px-[12px] py-[6px] rounded-[8px] text-white w-fit fixed left-[24px] top-[12px] cursor-pointer" onClick={handleEnd}>结束</div>
+      {/* <div className="bg-[rgb(247,101,96)] px-[12px] py-[6px] rounded-[8px] text-white w-fit fixed left-[24px] top-[12px] cursor-pointer" onClick={handleEnd}>结束</div> */}
 
-      {
+      {/* {
         isShowScore ?
-          <div className="fixed w-[64px] h-[64px] bg-[#950bd3] rounded-[50%] flex justify-center items-center text-[20px] text-[white] font-bold right-[20px]">{`${score}%`}</div> : null
-      }
+          <div className="fixed h-[64px] bg-[#950bd3] px-[18px] rounded-[10px] flex justify-center items-center text-[20px] text-[white] font-bold right-[20px] w-fit left-0 right-0 mx-auto top-[16px]">{`你的開心指數：${score}%`}</div> : null
+      } */}
+
+      {/* <div className="w-fit fixed top-[16px] right-0 left-0 mx-auto flex flex-col items-center">
+        {
+          isShowScore ?
+            <div className="h-[64px] bg-[#950bd3] px-[18px] rounded-[10px] flex justify-center items-center text-[20px] text-[white] font-bold w-fit">{`你的開心指數：${score}%`}</div> : null
+        }
+      </div>
+
+      <div className="fixed top-[16px] right-[16px] flex flex-col items-end">
+        <div className="mt-[16px] bg-[#f5bf5e] px-[12px] py-[6px] rounded-[8px] text-white w-fit cursor-pointer text-[22px] flex flex-row items-center gap-x-[8px]" onClick={handleDonate}>
+          <img src={ICON_LIKE} className="w-[20px]" />
+          立即捐款
+        </div>
+        <div className="mt-[6px]">你的捐款能協助我們確保在香港任何人也毋須獨自面對精神健康問題。</div>
+      </div> */}
+
+      <div className="w-full h-[100vh]">
+        <div className="w-full h-full"></div>
+      </div>
     </div>
   )
 }

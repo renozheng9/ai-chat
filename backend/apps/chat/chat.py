@@ -5,6 +5,7 @@ from apps.login import login
 import time
 import string
 import random
+from requests import exceptions 
 
 import requests
 import json
@@ -20,6 +21,22 @@ async def getTextReply(text: str = Body(), history: list = Body()):
     print(text)
     print(history)
     
+    # try:
+    #     getTextByTextUrl = "http://127.0.0.1:8001/getTextReply"
+
+    #     getTextByTextData = json.dumps({
+    #         "text": text,
+    #         "history": history
+    #     })
+
+
+    #     getTextByTextRes = requests.post(getTextByTextUrl, data=getTextByTextData)
+    # except exceptions.Timeout as e:
+    #     print('请求超时：'+ str(e.message))
+    # except exceptions.HTTPError as e:
+    #     print('http请求错误:'+ str(e.message))
+    # else:
+
     getTextByTextUrl = "http://127.0.0.1:8001/getTextReply"
 
     getTextByTextData = json.dumps({
@@ -28,7 +45,7 @@ async def getTextReply(text: str = Body(), history: list = Body()):
     })
 
     getTextByTextRes = requests.post(getTextByTextUrl, data=getTextByTextData)
-
+    # getTextByTextRes.status_code
     getTextByTextResult = getTextByTextRes.json()
     print(getTextByTextResult)
 

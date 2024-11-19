@@ -34,7 +34,8 @@ async def lifespan(app: FastAPI):
     # Put model on GPU or else CPU
     globalVaribles["tokenizer"] = AutoTokenizer.from_pretrained(model_name)
     globalVaribles["model"] = AutoModelForSequenceClassification.from_pretrained(model_name)
-    globalVaribles["device"] = torch.device("cuda")
+    # globalVaribles["device"] = torch.device("cuda")
+    globalVaribles["device"] = torch.device("cpu")
     globalVaribles["model"] = globalVaribles["model"].to(globalVaribles["device"])
     yield
     torch_gc()
@@ -52,10 +53,11 @@ async def getSentiment(data: Data):
 
 
   for item in data.history:
-      if sentiment(item[0], globalVaribles["tokenizer"], globalVaribles["model"]) > 0:
-          posNum = posNum + 1
-      else:
-          negNum = negNum + 1
+      if item["role"] == "user":
+          if sentiment(item["content"], globalVaribles["tokenizer"], globalVaribles["model"]) > 0:
+            posNum = posNum + 1
+          else:
+            negNum = negNum + 1
 
   return { "pos": posNum, "neg": negNum }
 
