@@ -27,13 +27,18 @@
 * 改進評分功能
 * 捐贈功能
   - stripe 帳戶
-* 開通amazon 雲帳戶
+  
 * whatsapp or tg?
+* TODO
+  - 頁面排版畫圖 - Raymond
+  - 支付功能 - reno
+    + 加到頁面下面
+    + 支付完成後，倒計時或直接返回首頁
+    + 版權文字加到頁面最後面
+  - 寫如何本地運行 - reno
+  - 支持本地運行 - reno+raymond
 
-#### meeting at 8:00 on 2024-11-21
-* 捐贈功能 
-* 雲上面
-  - 暫時部署本地服務器
+#### meeting at 8:00 on 2024-11-20
   
 #### issues
 
