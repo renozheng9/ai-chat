@@ -11,7 +11,8 @@ import theme from './theme/theme.js'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ChakraProvider theme={theme}>
-      <RouterProvider router={router} />
+      <App />
+      {/* <RouterProvider router={router} /> */}
     </ChakraProvider>
   </StrictMode>,
 )

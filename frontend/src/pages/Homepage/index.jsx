@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from 'axios'
-import { useNavigate } from "react-router-dom";
 import Recorder from 'recorder-core'
 import 'recorder-core/src/engine/mp3'
 import 'recorder-core/src/engine/mp3-engine'
@@ -10,13 +9,11 @@ import MessageBoxChat from '@/components/MessageBox';
 import Wave from '@/components/Wave'
 import ICON_RECORD from '@/assets/record.svg'
 import ICON_LIKE from '@/assets/like.svg'
+import Checkout from "@/components/check";
 import './index.css'
 
-function Homepage() {
-  const navigate = useNavigate()
-  const [count, setCount] = useState(0)
+function Homepage({ clientSecret, clientId }) {
   const [loading, setLoading] = useState(false)
-  const [outputCode, setOutputCode] = useState('')
   const [inputText, setInputText] = useState('')
 
   const [messageList, setMessageList] = useState([
@@ -31,11 +28,12 @@ function Homepage() {
 
   const [canRecord, setCanRecord] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
-  
+
   const [score, setScore] = useState(0)
   const [isShowScore, setIsShowScore] = useState(false)
 
   const scrollRef = useRef(null)
+  const containerRef = useRef(null)
   const recorder = useRef(null)
   const audioPlayerRef = useRef(null)
 
@@ -166,7 +164,7 @@ function Homepage() {
       const file = new File([blob], 'audio.wav', { type: 'audio/wav' })
       const formData = new FormData()
       formData.append('file', file)
-      
+
       axios.post('http://127.0.0.1:8000/chat/getAudioTranslation', formData).then(translationRes => {
         console.log(translationRes)
         if (translationRes.status == 200) {
@@ -294,7 +292,7 @@ function Homepage() {
         } else {
           setScore(Math.floor(res.data.pos * 100 / (res.data.pos + res.data.neg)))
         }
-        
+
         setIsShowScore(true)
       }
     }).catch(err => {
@@ -310,7 +308,11 @@ function Homepage() {
   }, [messageList])
 
   function handleDonate() {
-    navigate("/checkout")
+    // navigate("/checkout")
+    containerRef.current.scrollTo({
+      top: Number.MAX_SAFE_INTEGER,
+      behavior: 'smooth'
+    })
   }
 
   useEffect(() => {
@@ -354,90 +356,90 @@ function Homepage() {
   }, [messageList])
 
   return (
-    <div className="flex flex-col justify-between max-w-[1280px] mx-auto my-0 pt-[16px] pb-[24px] px-[64px]">
+    <div ref={containerRef} className="w-full h-[100vh]  flex flex-col overflow-y-scroll justify-between max-w-[1280px] mx-auto my-0 px-[64px]">
       {/* <div onClick={handleTest}>click</div> */}
-      
-      <div className="w-full flex flex-row justify-between">
-        <div className="bg-[rgb(247,101,96)] h-fit px-[12px] py-[6px] rounded-[8px] text-white w-fit cursor-pointer" onClick={handleEnd}>结束</div>
-        
-        <div className="w-fit mx-auto flex flex-col items-center">
-          {
-            isShowScore ?
-              <div className="h-[64px] bg-[#950bd3] px-[18px] rounded-[10px] flex justify-center items-center text-[20px] text-[white] font-bold w-fit">{`你的開心指數：${score}%`}</div> : null
-          }
-        </div>
-        <div>
+      <div className="w-full h-[100vh] shrink-0 flex flex-col pt-[16px] pb-[24px]">
+        <div className="w-full flex flex-row justify-between">
+          <div className="bg-[rgb(247,101,96)] h-fit px-[12px] py-[6px] rounded-[8px] text-white w-fit cursor-pointer" onClick={handleEnd}>结束</div>
 
-          <div className="flex flex-col items-end">
-            <div className="mt-[16px] bg-[#f5bf5e] px-[12px] py-[6px] rounded-[8px] text-white w-fit cursor-pointer flex flex-row items-center gap-x-[8px]" onClick={handleDonate}>
-              <img src={ICON_LIKE} className="w-[20px]" />
-              立即捐款
+          <div className="w-fit mx-auto flex flex-col items-center">
+            {
+              isShowScore ?
+                <div className="h-[64px] bg-[#950bd3] px-[18px] rounded-[10px] flex justify-center items-center text-[20px] text-[white] font-bold w-fit">{`你的開心指數：${score}%`}</div> : null
+            }
+          </div>
+          <div>
+
+            <div className="flex flex-col items-end">
+              <div className="mt-[16px] bg-[#f5bf5e] px-[12px] py-[6px] rounded-[8px] text-white w-fit cursor-pointer flex flex-row items-center gap-x-[8px]" onClick={handleDonate}>
+                <img src={ICON_LIKE} className="w-[20px]" />
+                立即捐款
+              </div>
+              <div className="mt-[6px]">所有人的精神健康都值得重视</div>
             </div>
-            <div className="mt-[6px]">所有人的精神健康都值得重视</div>
           </div>
         </div>
-      </div>
 
-      <div className="w-full h-[70vh] overflow-auto" ref={scrollRef}>
-        <Flex
-          direction="column"
-          w="100%"
-          mx="auto"
-          display={'flex'}
-          mb={'auto'}
-          style={{ rowGap: '24px' }}
-        >
-          {
-            renderMessageList.map((item, index) => (
-              item.role === 'user' ?
-                (
-                  <Flex align={'center'} mb="10px" key={index}>
-                    <Flex
-                      borderRadius="full"
-                      justify="center"
-                      align="center"
-                      bg={'transparent'}
-                      border="1px solid"
-                      borderColor="#E2E8F0"
-                      me="20px"
-                      h="40px"
-                      minH="40px"
-                      minW="40px"
-                    >
-                      <Icon
-                        as={MdPerson}
-                        width="20px"
-                        height="20px"
-                        color="#422AFB"
-                      />
-                    </Flex>
-                    <Flex
-                      px="22px"
-                      py={item.audio ? '0px' : '18px'}
-                      minH="60px"
-                      border="1px solid"
-                      borderColor="#E2E8F0"
-                      borderRadius="14px"
-                      zIndex={'2'}
-                    >
-                      {
-                        item.audio ?
-                          <div className="h-full min-h-[60px] flex flex-row items-center" onClick={() => handleItemAudioClick(item)}>
-                            <Wave isPlaying={item.isPlaying} />
+        <div className="w-full flex-1 overflow-auto" ref={scrollRef}>
+          <Flex
+            direction="column"
+            w="100%"
+            mx="auto"
+            display={'flex'}
+            mb={'auto'}
+            style={{ rowGap: '24px' }}
+          >
+            {
+              renderMessageList.map((item, index) => (
+                item.role === 'user' ?
+                  (
+                    <Flex align={'center'} mb="10px" key={index}>
+                      <Flex
+                        borderRadius="full"
+                        justify="center"
+                        align="center"
+                        bg={'transparent'}
+                        border="1px solid"
+                        borderColor="#E2E8F0"
+                        me="20px"
+                        h="40px"
+                        minH="40px"
+                        minW="40px"
+                      >
+                        <Icon
+                          as={MdPerson}
+                          width="20px"
+                          height="20px"
+                          color="#422AFB"
+                        />
+                      </Flex>
+                      <Flex
+                        px="22px"
+                        py={item.audio ? '0px' : '18px'}
+                        minH="60px"
+                        border="1px solid"
+                        borderColor="#E2E8F0"
+                        borderRadius="14px"
+                        zIndex={'2'}
+                      >
+                        {
+                          item.audio ?
+                            <div className="h-full min-h-[60px] flex flex-row items-center" onClick={() => handleItemAudioClick(item)}>
+                              <Wave isPlaying={item.isPlaying} />
 
-                          </div>
-                           :
-                          <Text
-                            color="#1B254B"
-                            fontWeight="600"
-                            fontSize={{ base: 'sm', md: 'sm' }}
-                            lineHeight={{ base: '24px', md: '24px' }}
-                          >
-                            {item.text}
-                          </Text>
-                      }
-          
-                      {/* <Icon
+                            </div>
+                            :
+                            <Text
+                              color="#1B254B"
+                              fontWeight="600"
+                              fontSize={{ base: 'sm', md: 'sm' }}
+                              lineHeight={{ base: '24px', md: '24px' }}
+                            >
+                              {item.text}
+                            </Text>
+                        }
+
+                        {/* <Icon
                   cursor="pointer"
                   as={MdEdit}
                   ms="auto"
@@ -445,111 +447,114 @@ function Homepage() {
                   height="20px"
                   color={gray}
                 /> */}
+                      </Flex>
                     </Flex>
-                  </Flex>
-                ) : (
-                  <Flex w="100%" justify="end" key={index}>
-                    <MessageBoxChat data={item} onItemAudioClick={handleItemAudioClick} />
-                    <Flex
-                      borderRadius="full"
-                      justify="center"
-                      align="center"
-                      bg={'linear-gradient(15.46deg, #4A25E1 26.3%, #7B5AFF 86.4%)'}
-                      ml="20px"
-                      h="40px"
-                      minH="40px"
-                      minW="40px"
-                    >
-                      <Icon
-                        as={MdAutoAwesome}
-                        width="20px"
-                        height="20px"
-                        color="white"
-                      />
+                  ) : (
+                    <Flex w="100%" justify="end" key={index}>
+                      <MessageBoxChat data={item} onItemAudioClick={handleItemAudioClick} />
+                      <Flex
+                        borderRadius="full"
+                        justify="center"
+                        align="center"
+                        bg={'linear-gradient(15.46deg, #4A25E1 26.3%, #7B5AFF 86.4%)'}
+                        ml="20px"
+                        h="40px"
+                        minH="40px"
+                        minW="40px"
+                      >
+                        <Icon
+                          as={MdAutoAwesome}
+                          width="20px"
+                          height="20px"
+                          color="white"
+                        />
+                      </Flex>
                     </Flex>
-                  </Flex>
-                )
-            ))
-          }
-        </Flex>
-      </div>
-      <div className="mt-[24px] flex flex-row justify-between gap-x-[24px]">
-        <div className="flex-1">
-          <Input
-            minH="54px"
-            h="100%"
-            border="1px solid"
-            borderColor="#E2E8F0"
-            borderRadius="45px"
-            p="15px 20px"
-            me="10px"
-            fontSize="sm"
-            fontWeight="500"
-            _focus={{ borderColor: 'none' }}
-            color="#1B254B"
-            _placeholder={{ color: '#86909C' }}
-            placeholder="请输入..."
-            onChange={handleChange}
-            value={inputText}
-          />
+                  )
+              ))
+            }
+          </Flex>
         </div>
-        <Button
-          variant="primary"
-          py="20px"
-          px="16px"
-          fontSize="sm"
-          borderRadius="45px"
-          ms="auto"
-          w={{ base: '120px', md: '120px' }}
-          h="54px"
-          _hover={{
-            boxShadow:
-              '0px 21px 27px -10px rgba(96, 60, 255, 0.48) !important',
-            bg: 'linear-gradient(15.46deg, #4A25E1 26.3%, #7B5AFF 86.4%) !important',
-            _disabled: {
-              bg: 'linear-gradient(15.46deg, #4A25E1 26.3%, #7B5AFF 86.4%)',
-            },
-          }}
-          onClick={getReply}
-          isLoading={loading ? true : false}
-        >
-          发送
-        </Button>
-        {
-          canRecord ?
-            <div className="h-full flex justify-center items-center border-[1px] border-[#950bd3] rounded-[50%] px-[16px]" onClick={handleRecord}>
-              {
-                isRecording ?
-                  <div className="w-[24px] h-[24px] bg-[#950bd3]"></div> :
-                  <img src={ICON_RECORD} className="w-[24px] h-[24px]" />
-              }
-            </div> :
-            <Button
-              variant="primary"
-              py="20px"
-              px="16px"
-              fontSize="sm"
+        <div className="mt-[24px] flex flex-row justify-between gap-x-[24px]">
+          <div className="flex-1">
+            <Input
+              minH="54px"
+              h="100%"
+              border="1px solid"
+              borderColor="#E2E8F0"
               borderRadius="45px"
-              ms="auto"
-              w={{ base: '120px', md: '120px' }}
-              h="54px"
-              _hover={{
-                boxShadow:
-                  '0px 21px 27px -10px rgba(96, 60, 255, 0.48) !important',
-                bg: 'linear-gradient(15.46deg, #4A25E1 26.3%, #7B5AFF 86.4%) !important',
-                _disabled: {
-                  bg: 'linear-gradient(15.46deg, #4A25E1 26.3%, #7B5AFF 86.4%)',
-                },
-              }}
-              onClick={handleAuthRecord}
-            >
-              授权录音
-            </Button>
-        }
-        {/* <div onClick={handleAuthRecord}>授权录音</div> */}
-        {/* <div onClick={handleBeginRecord}>录音</div>
+              p="15px 20px"
+              me="10px"
+              fontSize="sm"
+              fontWeight="500"
+              _focus={{ borderColor: 'none' }}
+              color="#1B254B"
+              _placeholder={{ color: '#86909C' }}
+              placeholder="请输入..."
+              onChange={handleChange}
+              value={inputText}
+            />
+          </div>
+          <Button
+            variant="primary"
+            py="20px"
+            px="16px"
+            fontSize="sm"
+            borderRadius="45px"
+            ms="auto"
+            w={{ base: '120px', md: '120px' }}
+            h="54px"
+            _hover={{
+              boxShadow:
+                '0px 21px 27px -10px rgba(96, 60, 255, 0.48) !important',
+              bg: 'linear-gradient(15.46deg, #4A25E1 26.3%, #7B5AFF 86.4%) !important',
+              _disabled: {
+                bg: 'linear-gradient(15.46deg, #4A25E1 26.3%, #7B5AFF 86.4%)',
+              },
+            }}
+            onClick={getReply}
+            isLoading={loading ? true : false}
+          >
+            发送
+          </Button>
+          {
+            canRecord ?
+              <div className="h-full flex justify-center items-center border-[1px] border-[#950bd3] rounded-[50%] px-[16px]" onClick={handleRecord}>
+                {
+                  isRecording ?
+                    <div className="w-[24px] h-[24px] bg-[#950bd3]"></div> :
+                    <img src={ICON_RECORD} className="w-[24px] h-[24px]" />
+                }
+              </div> :
+              <Button
+                variant="primary"
+                py="20px"
+                px="16px"
+                fontSize="sm"
+                borderRadius="45px"
+                ms="auto"
+                w={{ base: '120px', md: '120px' }}
+                h="54px"
+                _hover={{
+                  boxShadow:
+                    '0px 21px 27px -10px rgba(96, 60, 255, 0.48) !important',
+                  bg: 'linear-gradient(15.46deg, #4A25E1 26.3%, #7B5AFF 86.4%) !important',
+                  _disabled: {
+                    bg: 'linear-gradient(15.46deg, #4A25E1 26.3%, #7B5AFF 86.4%)',
+                  },
+                }}
+                onClick={handleAuthRecord}
+              >
+                授权录音
+              </Button>
+          }
+          {/* <div onClick={handleAuthRecord}>授权录音</div> */}
+          {/* <div onClick={handleBeginRecord}>录音</div>
         <div onClick={handleStopRecord}>停止录音</div> */}
+        </div>
       </div>
+
+
 
       {/* <div className="bg-[rgb(247,101,96)] px-[12px] py-[6px] rounded-[8px] text-white w-fit fixed left-[24px] top-[12px] cursor-pointer" onClick={handleEnd}>结束</div> */}
 
@@ -573,8 +578,9 @@ function Homepage() {
         <div className="mt-[6px]">你的捐款能協助我們確保在香港任何人也毋須獨自面對精神健康問題。</div>
       </div> */}
 
-      <div className="w-full h-[100vh]">
-        <div className="w-full h-full"></div>
+      <div className="w-full h-[100vh] shrink-0 relative">
+        <Checkout clientSecret={clientSecret} clientId={clientId} />
+        <div className="absolute bottom-[16px] left-0 right-0 mx-auto w-fit">@2024 Bean HK. All Right Reserved</div>
       </div>
     </div>
   )

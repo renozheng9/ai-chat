@@ -6,7 +6,7 @@ import {
 } from "@stripe/react-stripe-js";
 import './index.css'
 
-export default function CheckoutForm({ dpmCheckerLink }) {
+export default function CheckoutForm() {
   const stripe = useStripe();
   const elements = useElements();
 

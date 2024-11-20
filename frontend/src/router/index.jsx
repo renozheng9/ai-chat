@@ -1,7 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom'
 import Login from '@/pages/Login/index'
 import Homepage from '@/pages/Homepage'
-import Checkout from '@/pages/Checkout'
+import Complete from '@/pages/Complete'
 
 const router = createBrowserRouter([
   {
@@ -13,8 +13,8 @@ const router = createBrowserRouter([
     element: <Login />
   },
   {
-    path: '/checkout',
-    element: <Checkout />
+    path: '/complete',
+    element: <Complete />
   }
 ])
 
