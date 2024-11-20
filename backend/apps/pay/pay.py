@@ -73,6 +73,7 @@ async def createPayment(data: CreatePaymentData):
             raise HTTPException(status_code=400, detail="params is invalid")
 
         paymentMethods = ["card"] if data.currency == 'usd' else ["card", "alipay", "wechat_pay"]
+
         # Create a PaymentIntent with the order amount and currency
         intent = stripe.PaymentIntent.create(
             amount=data.amount,
@@ -111,13 +112,15 @@ async def updatePayment(data: UpdatePaymentData):
 
         clientId = My_AES_CBC(key, iv=iv.encode('utf-8')).decrypt(base64.b64decode(data.client))
 
+        paymentMethods = ["card"] if data.currency == 'usd' else ["card", "alipay", "wechat_pay"]
         print(clientId)
         print(stripe.PaymentIntent.retrieve(clientId))
 
         stripe.PaymentIntent.modify(
           clientId,
           amount=data.amount,
-          currency=data.currency
+          currency=data.currency,
+          payment_method_types=paymentMethods
         )
 
         # paymentMethods = ["card"] if data.currency == 'usd' else ["card", "alipay", "wechat_pay"]
