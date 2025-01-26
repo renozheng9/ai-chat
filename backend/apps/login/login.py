@@ -8,11 +8,14 @@ from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
 from pydantic import BaseModel
 
+from bson.objectid import ObjectId
+
 # to get a string like this run:
 # openssl rand -hex 32
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7
+# ACCESS_TOKEN_EXPIRE_MINUTES = 1
 
 router = APIRouter(
     prefix="",
@@ -24,7 +27,7 @@ fake_users_db = {
         "username": "john",
         "full_name": "John Doe",
         "email": "johndoe@example.com",
-        "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
+        "hashed_password": "$2b$12$UA5r8.jSbIZkmx1dgJsyNusoShqJRgJrWM9vqcm7cUPGYtXlWvOjS",
         "disabled": False,
     }
 }
@@ -161,6 +164,20 @@ async def read_own_items(
 ):
     return [{"item_id": "Foo", "owner": current_user.username}]
 
+@router.get("/users/test")
+async def getPwsHash(
+    password: Annotated[str, 123]
+):
+    print(password)
+    return password
+
+@router.get("/users/mongo")
+async def getMongo(request: Request):
+    collection = request.app.state.db["user"]
+    obj = await collection.find_one({"_id": ObjectId("679309b369e8fb7483dbbd33")})
+    if obj is None:
+        return None
+    return {"id": "123", "name": obj["name"]}
 # from typing import Optional
 # from fastapi import APIRouter, Depends, HTTPException, status
 # from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm

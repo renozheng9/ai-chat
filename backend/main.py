@@ -11,7 +11,13 @@ from apps.chat import chat
 from apps.login import login
 from apps.pay import pay
 
-app = FastAPI()
+from db import database
+
+async def lifespan(app: FastAPI):
+    app.state.db = database
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 app.mount('/static', StaticFiles(directory="static"), name="static")
 
