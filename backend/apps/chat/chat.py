@@ -55,7 +55,7 @@ async def getTextReply(text: str = Body(), history: list = Body()):
 async def getAudioTranslation(file: UploadFile = File()):
     fn = file.filename
     filename = str(int(time.time())) + '_' + ''.join(random.sample(string.ascii_letters + string.digits, 8)) + '.wav'
-    save_path = f'E:\\projects\\ai-chat\\fileServer\\static\\'
+    save_path = f'/Users/zhaowenlong/workspace/dev.ai-chat/fileServer/static/'
     # if not os.path.exists(save_path):
     #     os.mkdir(save_path)
     print(filename)
